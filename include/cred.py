@@ -11,8 +11,8 @@ warnings.filterwarnings("ignore", category=NotOpenSSLWarning)
 
 def env_cred():
     client = Client.from_client_credentials(
-        client_id="50461",
-        client_secret="fgXrYFUMiuTFbidU4NMTikgIfWoL2fzQmQHql6Ft",
+        client_id="---Client_ID---",
+        client_secret="---Client_Secret---",
         redirect_url="http://localhost"
     )
     return client
