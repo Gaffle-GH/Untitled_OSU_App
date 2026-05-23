@@ -1,4 +1,3 @@
-# Ignore test venv
 src/TEST/venv/*
 .cache/
 node_modules/
