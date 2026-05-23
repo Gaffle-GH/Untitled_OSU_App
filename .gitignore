@@ -1,0 +1,5 @@
+# Ignore test venv
+src/TEST/venv/*
+.cache/
+node_modules/
+.DS_Store
