@@ -11,13 +11,15 @@ from osu.exceptions import RequestException
 # GET: Fetch Beatmap Details and Download Preview
 def fetch_details():
     while True:
-        print("Enter a valid beatmap ID to fetch details and Download Preview Song & Beatmap.")
-        print("Example: 'https://osu.ppy.sh/beatmapsets/1#osu/75' -> ID: 75")
-        id = int(input("ID: "))
+        print("Enter a beatmapset ID or beatmap ID to fetch details and Download Preview Song & Beatmap.")
+        print("Example: 'https://osu.ppy.sh/beatmapsets/1#osu/75' -> Beatmap ID: 75, Beatmapset ID: 1")
+        user_input = input("ID: ").strip()
+        if not user_input.isdigit():
+            print("Please enter a numeric ID.")
+            continue
+        id = int(user_input)
 
         save_folder = "previews"
-
-        # Delete existing previews inside folder (keep folder)
         if os.path.exists(save_folder):
             for file in os.listdir(save_folder):
                 file_path = os.path.join(save_folder, file)
@@ -25,42 +27,33 @@ def fetch_details():
                     os.remove(file_path)
         else:
             os.makedirs(save_folder, exist_ok=True)
+
+        # Try as beatmap ID first
         try:
             beatmap = client.get_beatmap(id)
-
-            # Swap BEATMAP Status Code to String
+            # If this works, it's a beatmap ID
             if beatmap.status == 1:
                 beatmap.status = "RANKED"
             elif beatmap.status == 2:
                 beatmap.status = "APPROVED"
             else:
                 beatmap.status = "UNRANKED"
-
-            # Round Difficulty Rating to 2 Decimal Places
             beatmap.difficulty_rating = round(beatmap.difficulty_rating, 2)
-
             print(f"RESULT:\n",
                 f"{beatmap.beatmapset.title} by {beatmap.beatmapset.artist}\n",
                 f"Difficulty: [{beatmap.version}] {beatmap.difficulty_rating} stars\n",
                 f"Max Combo: {beatmap.max_combo}, BPM: {beatmap.bpm}, Length: {beatmap.total_length} seconds\n",
                 f"Status: {beatmap.status}\n",
                 f"URL: {beatmap.url}\n")
-
-            # Song Preview DOWNLOAD and DELETES AFTER RERUN OF PROGRAM
             preview_url = f"https://b.ppy.sh/preview/{beatmap.beatmapset.id}.mp3"
-            
             beatmap_download(id, beatmap)
-            
             response = httpx.get(preview_url)
             if response.status_code == 200:
                 filename = f"preview.mp3"
                 filepath = os.path.join(save_folder, filename)
-
                 with open(filepath, "wb") as file:
                     file.write(response.content)
                 print(f"Song preview downloaded successfully as '{filepath}'.")
-
-                # Open the downloaded preview file with QuickTime Player on macOS
                 if sys.platform == "darwin":
                     os.system(f"open -a \"QuickTime Player\" \"{filepath}\"")
                 elif sys.platform == "win32":
@@ -69,10 +62,36 @@ def fetch_details():
                     os.system(f"xdg-open \"{filepath}\"")
             else:
                 print(f"Failed to download preview: {response.status_code}")
-            break # Exit loop if successful 
-
+            break
         except RequestException:
-            print("An error occurred while fetching beatmap details. Retrying...")
+            # If not a beatmap, try as beatmapset
+            try:
+                beatmapset = client.get_beatmapset(id)
+                print(f"RESULT:\n",
+                      f"{beatmapset.title} by {beatmapset.artist}\n",
+                      f"Beatmapset ID: {beatmapset.id}\n",
+                      f"URL: https://osu.ppy.sh/beatmapsets/{beatmapset.id}\n")
+                # Optionally, preview for the set
+                preview_url = f"https://b.ppy.sh/preview/{beatmapset.id}.mp3"
+                response = httpx.get(preview_url)
+                if response.status_code == 200:
+                    filename = f"preview.mp3"
+                    filepath = os.path.join(save_folder, filename)
+                    with open(filepath, "wb") as file:
+                        file.write(response.content)
+                    print(f"Song preview downloaded successfully as '{filepath}'.")
+                    if sys.platform == "darwin":
+                        os.system(f"open -a \"QuickTime Player\" \"{filepath}\"")
+                    elif sys.platform == "win32":
+                        os.startfile(filepath)
+                    else:
+                        os.system(f"xdg-open \"{filepath}\"")
+                else:
+                    print(f"Failed to download preview: {response.status_code}")
+                break
+            except RequestException:
+                print("An error occurred while fetching details. Please enter a valid beatmap or beatmapset ID.")
+                continue
 
 # GET: Download Beatmap
 def beatmap_download(id, beatmap):

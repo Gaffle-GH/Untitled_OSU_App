@@ -9,7 +9,7 @@ A command-line tool for fetching details and downloading osu! beatmaps and song 
 -   **Song Preview**: Downloads a `.mp3` preview of the beatmap's song.
 -   **Auto-Play**: Automatically opens the downloaded song preview using the system's default media player (supports macOS, Windows, and Linux).
 -   **Comprehensive Test Suite**: Includes a testing framework to validate beatmap fetching, downloading, and file extraction logic against a set of predefined test cases.
--   **Background Art Extraction**: The test functions can extract background images (`.jpg`, `.png`) from downloaded `.osz` files.
+-   **Background Art Extraction**: The test functions can extract background images (`.jpg`, `.jpeg`, `.png`, `.gif`, `.bmp`, `.webp`, `.tiff`) from downloaded `.osz` files.
 
 ## Project Structure
 

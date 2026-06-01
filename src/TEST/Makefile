@@ -5,6 +5,7 @@ PIP = $(VENV)/bin/pip
 .PHONY: run clean
 
 run: $(VENV)/bin/activate
+	clear
 	$(PYTHON) test_cases.py
 
 # Installs All Required Library
@@ -18,3 +19,4 @@ clean:
 	rm -r download/*
 	rm -rf __pycache__/*
 	rm -rf $(VENV)
+	clear
