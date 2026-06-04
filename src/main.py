@@ -104,17 +104,17 @@ def beatmap_download(id, beatmap):
           f"Web URL: https://osu.ppy.sh/beatmapsets/{beatmapset_id}#osu/{id}\n")
 
     mirrors = [
-        f"https://api.nerinyan.moe/d/{beatmapset_id}",
-        f"https://beatconnect.io/b/{beatmapset_id}", # Currently Works
-        f"https://kitsu.moe/api/d/{beatmapset_id}",
+        (f"https://api.nerinyan.moe/d/{beatmapset_id}", (10, 120)),
+        (f"https://beatconnect.io/b/{beatmapset_id}", (5, 60)), # rate-limited, keep as fallback
+        (f"https://kitsu.moe/api/d/{beatmapset_id}", (5, 60)),
     ]
 
     response = None
     initial_chunk = None
-    for url in mirrors:
+    for url, timeout in mirrors:
         try:
             print(f"Trying: {url}")
-            r = requests.get(url, stream=True, timeout=10)
+            r = requests.get(url, stream=True, timeout=timeout)
             r.raise_for_status()
 
             content_type = r.headers.get("Content-Type", "").lower()

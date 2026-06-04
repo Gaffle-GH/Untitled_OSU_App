@@ -7,6 +7,9 @@ import sys
 import os
 import httpx
 import requests
+import time
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 import zipfile
 from PIL import Image
 
@@ -42,9 +45,25 @@ def unique_path(base_path):
             return candidate
         index += 1
 
+
+def unique_path_for_content(base_path, content):
+    if not os.path.exists(base_path):
+        return base_path
+
+    with open(base_path, 'rb') as existing_file:
+        if existing_file.read() == content:
+            return base_path
+
+    root, ext = os.path.splitext(base_path)
+    index = 1
+    while True:
+        candidate = f"{root} ({index}){ext}"
+        if not os.path.exists(candidate):
+            return candidate
+        index += 1
+
 sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 
-from urllib import response
 from include.cred import client
 # from osu.exceptions import RequestException
 RequestException = Exception  # fallback to generic Exception if osu.exceptions is unavailable
@@ -53,96 +72,145 @@ from rosu_pp_py import Beatmap, Performance
 from src.main import fetch_details
 
 # Downlaods OSZ
-def test_download(id, beatmap):
+def test_download(beatmapset_id):
     script_dir  = os.path.dirname(os.path.abspath(__file__))
     save_folder = os.path.join(script_dir, "download")
     os.makedirs(save_folder, exist_ok=True)
 
-    mapset        = client.get_beatmap(id)
-    beatmapset_id = mapset.beatmapset.id
+    # Use beatmapset metadata for filenames and URLs
+    mapset = client.get_beatmapset(beatmapset_id)
+
+    existing_files = [f for f in os.listdir(save_folder) if f.endswith('.osz') and str(beatmapset_id) in f]
+    valid_existing = None
+    for existing_file in existing_files:
+        filepath = os.path.join(save_folder, existing_file)
+        if zipfile.is_zipfile(filepath):
+            valid_existing = filepath
+            break
+        _warn(f"invalid existing OSZ removed: {existing_file}")
+        os.remove(filepath)
+
+    if valid_existing:
+        _ok(f"already downloaded  {Colors.DIM}{os.path.basename(valid_existing)}{Colors.END}")
+        extract_result = test_extract_beatmap(valid_existing)
+        return {
+            "osz_path": valid_existing,
+            "extract": extract_result,
+        }
 
     _section("DOWNLOAD BEATMAP")
     print()
     _field("beatmapset id", str(beatmapset_id), Colors.YELLOW)
-    _field("url",           mapset.url)
+    _field("url",           f"https://osu.ppy.sh/beatmapsets/{beatmapset_id}")
     print()
 
+    # Mirrors to try (domain, (connect_timeout, read_timeout))
+    # Prefer the API host that worked manually (api.nerinyan.moe) first.
     mirrors = [
-        f"https://api.nerinyan.moe/d/{beatmapset_id}",
-        f"https://beatconnect.io/b/{beatmapset_id}",
-        f"https://kitsu.moe/api/d/{beatmapset_id}",
+        (f"https://api.nerinyan.moe/d/{beatmapset_id}", (10, 120)),
+        (f"https://dl.nerinyan.moe/v2/d/{beatmapset_id}", (10, 120)),
     ]
 
-    response      = None
-    initial_chunk = None
+    session = requests.Session()
+    # Use browser-like headers — some mirrors block unknown user-agents or require Referer
+    browser_ua = (
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
+    )
+    referer = f"https://osu.ppy.sh/beatmapsets/{beatmapset_id}"
+    session.headers.update({
+        "User-Agent": browser_ua,
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Referer": referer,
+    })
 
-    for url in mirrors:
+    filename = f"{beatmapset_id} - {mapset.artist} {mapset.title}.osz"
+    filepath = os.path.join(save_folder, filename)
+    temp_path = os.path.join(save_folder, f".{beatmapset_id}.part")
+
+    for url, timeout in mirrors:
         try:
             _try(url)
-            r = requests.get(url, stream=True, timeout=10)
-            r.raise_for_status()
+            # Retry on 429 with exponential backoff
+            max_attempts = 3
+            backoff = 1
+            r = None
+            for attempt in range(1, max_attempts + 1):
+                try:
+                    r = session.get(url, stream=True, timeout=timeout)
+                except requests.exceptions.RequestException as e:
+                    # network-level error, break to outer handler
+                    raise
+
+                if r.status_code == 429:
+                    if attempt < max_attempts:
+                        _warn(f"429 Too Many Requests, retrying in {backoff}s (attempt {attempt}/{max_attempts})")
+                        time.sleep(backoff)
+                        backoff *= 2
+                        continue
+                    else:
+                        _err(f"429 Client Error: Too Many Requests for url: {url}/")
+                        break
+
+                # non-429: validate status
+                r.raise_for_status()
+                break
+
+            # if we exhausted retries and received 429, move to next mirror
+            if r is None or r.status_code == 429:
+                continue
 
             content_type = r.headers.get("Content-Type", "").lower()
             if "html" in content_type or "text" in content_type:
                 _warn(f"HTML content-type returned, skipping")
                 continue
 
-            content_length = r.headers.get("Content-Length")
-            if content_length is not None and int(content_length) < 100_000:
-                _warn(f"suspiciously small response ({content_length} bytes), skipping")
-                continue
+            # Write full response to a temporary file, then validate as zip
+            with open(temp_path, "wb") as f:
+                for chunk in r.iter_content(chunk_size=8192):
+                    if chunk:
+                        f.write(chunk)
 
-            initial_chunk = next(r.iter_content(chunk_size=8192), b"")
-            if not initial_chunk:
+            if os.path.getsize(temp_path) == 0:
                 _warn("empty stream, skipping")
+                try:
+                    os.remove(temp_path)
+                except OSError:
+                    pass
                 continue
 
-            if not initial_chunk.startswith(b"PK"):
-                lower = initial_chunk.lower()
-                if b"<html" in lower or b"<doctype" in lower:
-                    _warn("HTML body returned instead of OSZ, skipping")
-                else:
-                    _warn("non-OSZ bytes returned, skipping")
+            if not zipfile.is_zipfile(temp_path):
+                _warn("downloaded file is not a valid OSZ, skipping mirror")
+                try:
+                    os.remove(temp_path)
+                except OSError:
+                    pass
                 continue
 
-            response = r
+            os.replace(temp_path, filepath)
             _ok("mirror accepted")
+            _ok(f"saved  {Colors.DIM}{filepath}{Colors.END}")
             print()
-            break
+            extract_result = test_extract_beatmap(filepath)
+            return {
+                "osz_path": filepath,
+                "extract": extract_result,
+            }
 
+        except requests.exceptions.RequestException as e:
+            _err(str(e))
+            continue
         except Exception as e:
             _err(str(e))
             continue
+        finally:
+            if os.path.exists(temp_path):
+                try:
+                    os.remove(temp_path)
+                except OSError:
+                    pass
 
-    if response is None:
-        existing_files = [f for f in os.listdir(save_folder) if f.endswith('.osz')]
-        for existing_file in existing_files:
-            if str(beatmapset_id) in existing_file:
-                _ok(f"already downloaded  {Colors.DIM}{existing_file}{Colors.END}")
-                filepath = os.path.join(save_folder, existing_file)
-                extract_result = test_extract_beatmap(filepath)
-                return {
-                    "osz_path": filepath,
-                    "extract": extract_result,
-                }
-        raise RuntimeError("all mirrors failed or returned invalid content — try again later")
-
-    filename = f"{beatmapset_id} - {mapset.beatmapset.artist} {mapset.beatmapset.title}.osz"
-    filepath = os.path.join(save_folder, filename)
-
-    with open(filepath, "wb") as f:
-        f.write(initial_chunk)
-        for chunk in response.iter_content(chunk_size=8192):
-            if chunk:
-                f.write(chunk)
-
-    _ok(f"saved  {Colors.DIM}{filepath}{Colors.END}")
-    print()
-    extract_result = test_extract_beatmap(filepath)
-    return {
-        "osz_path": filepath,
-        "extract": extract_result,
-    }
+    raise RuntimeError("all mirrors failed or returned invalid content — try again later")
 
 # Fetches Details of Beatmap (Specifically the ID Difficulty)
 def test_details(TEST, id):
@@ -216,7 +284,8 @@ def test_details(TEST, id):
                         print(f"  {_tag('ERR', Colors.RED)}  Please enter a number")
             
             print()
-            download_result = test_download(selected_beatmap.id, selected_beatmap)
+            # Use beatmapset id (not individual difficulty id) for downloads
+            download_result = test_download(beatmapset.id)
             if not download_result.get("extract", {}).get("cropped"):
                 raise RuntimeError("no cropped image produced from beatmap OSZ")
             return {
@@ -273,7 +342,8 @@ def test_details(TEST, id):
     else:
         raise RuntimeError(f"preview download failed ({response.status_code})")
 
-    download_result = test_download(id, beatmap)
+    # Use beatmapset id for downloads (avoid per-difficulty id issues)
+    download_result = test_download(beatmap.beatmapset.id)
     if not download_result.get("extract", {}).get("cropped"):
         raise RuntimeError("no cropped image produced from beatmap OSZ")
 
@@ -288,35 +358,89 @@ def test_details(TEST, id):
 
     return result
 
-# Extracts Beatmap's Song & Background Art
+# Extracts Beatmap's Background Art only
 def test_extract_beatmap(filepath):
     script_dir     = os.path.dirname(os.path.abspath(__file__))
     extract_folder = os.path.join(script_dir, "previews")
     os.makedirs(extract_folder, exist_ok=True)
 
-    extracted_paths = []
-    cropped_paths = []
+    image_exts = {'.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.tiff'}
+    import re
+
+    def sanitize(text: str) -> str:
+        return re.sub(r"[^0-9A-Za-z._-]", "_", text)
 
     _section("EXTRACT BACKGROUND")
     print()
+
+    extracted_paths = []
+    cropped_paths = []
+
     try:
         with zipfile.ZipFile(filepath, 'r') as zip_ref:
-            for file_info in zip_ref.filelist:
-                filename = file_info.filename
-                if (filename.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.tiff')) and
-                        '/' not in filename and '\\' not in filename):
-                    basename = os.path.basename(filename)
-                    extract_path = os.path.join(extract_folder, basename)
-                    extract_path = unique_path(extract_path)
-                    with zip_ref.open(filename) as source:
-                        content = source.read()
-                    with open(extract_path, 'wb') as target:
-                        target.write(content)
+            # Map archive names to bytes for quick lookup
+            names = set(zip_ref.namelist())
+
+            # Find all .osu files and parse their referenced backgrounds
+            osu_entries = [n for n in zip_ref.namelist() if n.lower().endswith('.osu')]
+            if not osu_entries:
+                raise RuntimeError("no .osu files found in OSZ")
+
+            for osu_name in osu_entries:
+                try:
+                    with zip_ref.open(osu_name) as f:
+                        osu_text = f.read().decode('utf-8', errors='ignore')
+
+                    # Look for background in [Events] lines like: 0,0,"bg.jpg",0,0
+                    bg_match = re.search(r'"([^\"]+\.(?:jpg|jpeg|png|webp|bmp|gif|tiff))"', osu_text, re.IGNORECASE)
+                    if not bg_match:
+                        # Fallback: search for common background keywords in file list
+                        bg_candidate = None
+                        for n in names:
+                            base = os.path.basename(n).lower()
+                            if any(k in base for k in ("bg", "background", "cover", "title", "art", "poster")) and os.path.splitext(base)[1] in image_exts:
+                                bg_candidate = n
+                                break
+                        if not bg_candidate:
+                            continue
+                        bg_name = bg_candidate
+                    else:
+                        bg_basename = bg_match.group(1)
+                        # background may be referenced relative to the .osu file; search archive for matching name
+                        possible = [n for n in names if os.path.basename(n).lower() == bg_basename.lower()]
+                        if possible:
+                            bg_name = possible[0]
+                        else:
+                            continue
+
+                    # Construct output names: include osu difficulty/version to make per-song files
+                    osu_base = os.path.splitext(os.path.basename(osu_name))[0]
+                    out_basename = f"{sanitize(os.path.splitext(os.path.basename(filepath))[0])}_{sanitize(osu_base)}_{os.path.basename(bg_name)}"
+                    extract_path = os.path.join(extract_folder, out_basename)
+
+                    # Read image bytes and write uniquely by content
+                    with zip_ref.open(bg_name) as src:
+                        img_bytes = src.read()
+
+                    extract_path = unique_path_for_content(extract_path, img_bytes)
+                    if not os.path.exists(extract_path):
+                        with open(extract_path, 'wb') as out_f:
+                            out_f.write(img_bytes)
+
                     cropped_path = img_crop(extract_path)
-                    extracted_paths.append(extract_path)
-                    cropped_paths.append(cropped_path)
-                    _ok(f"{filename}")
+                    # Return only the first found background/crop so one file is produced
+                    _ok(f"{bg_name} for {osu_base}")
                     _info(f"{Colors.DIM}{cropped_path}{Colors.END}")
+                    print()
+                    return {
+                        "extracted": [extract_path],
+                        "cropped": [cropped_path],
+                    }
+
+                except Exception:
+                    # keep processing other difficulties even if one fails
+                    continue
+
     except zipfile.BadZipFile:
         raise RuntimeError("not a valid zip file, skipping extraction")
     except Exception as e:
@@ -340,7 +464,9 @@ def img_crop(input_path, output_path=None, size=(720, 300)):
     if output_path is None:
         root, ext = os.path.splitext(input_path)
         output_path = f"{root}_crop{ext}"
-        output_path = unique_path(output_path)
+
+    if os.path.exists(output_path):
+        return output_path
 
     with Image.open(input_path) as img:
         img = img.convert("RGB")

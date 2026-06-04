@@ -9,3 +9,4 @@ class Colors:
     BOLD      = '\033[1m'
     UNDERLINE = '\033[4m'
     DIM       = '\033[2m'
+

@@ -9,7 +9,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 from include.const import Colors
 
 # Add a beatmapset ID (e.g., 2312504) and some beatmap IDs
-test_cases = [2312504, 4986389, 4973448, 4408321]
+test_cases = [2312504, 1635625, 2517380, 2558627]
 
 results = []
 skipped = 0
