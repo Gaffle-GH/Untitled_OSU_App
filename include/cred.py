@@ -10,8 +10,8 @@ from osu import Client
 warnings.filterwarnings("ignore", category=NotOpenSSLWarning)
 
 # Module-level credentials for OAuth
-client_id = "50461"
-client_secret = "fgXrYFUMiuTFbidU4NMTikgIfWoL2fzQmQHql6Ft"
+client_id = "id"
+client_secret = "secret"
 
 def env_cred():
     client = Client.from_client_credentials(
