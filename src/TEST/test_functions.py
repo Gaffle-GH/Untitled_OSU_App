@@ -69,7 +69,6 @@ from include.cred import client
 RequestException = Exception  # fallback to generic Exception if osu.exceptions is unavailable
 from osu import Mods
 from rosu_pp_py import Beatmap, Performance
-from src.main import fetch_details
 
 # Downlaods OSZ
 def test_download(beatmapset_id):
@@ -104,9 +103,10 @@ def test_download(beatmapset_id):
     _field("url",           f"https://osu.ppy.sh/beatmapsets/{beatmapset_id}")
     print()
 
-    # Mirrors to try (domain, (connect_timeout, read_timeout))
-    # Prefer the API host that worked manually (api.nerinyan.moe) first.
+    # Mirrors to try (url, (connect_timeout, read_timeout))
     mirrors = [
+        (f"https://beatconnect.io/b/{beatmapset_id}", (10, 120)),
+        (f"https://osu.direct/api/d/{beatmapset_id}", (10, 120)),
         (f"https://api.nerinyan.moe/d/{beatmapset_id}", (10, 120)),
         (f"https://dl.nerinyan.moe/v2/d/{beatmapset_id}", (10, 120)),
     ]
@@ -354,7 +354,6 @@ def test_details(TEST, id):
 
     if TEST == False:
         print(f"\n  {_tag('SKIP', Colors.YELLOW)}  testing disabled\n")
-        fetch_details()
 
     return result
 

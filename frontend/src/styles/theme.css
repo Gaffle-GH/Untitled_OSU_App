@@ -1,0 +1,216 @@
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --font-size: 16px;
+  --font-sans: "Torus", -apple-system, BlinkMacSystemFont, "SF Pro Text",
+    system-ui, sans-serif;
+
+  /* Accents — used sparingly for stats & key actions */
+  --osu-pink: #e879a9;
+  --osu-pink-dim: #a78bfa;
+  --osu-green: #4ade80;
+
+  /* Neutral system palette */
+  --ios-blue: #6b9bd1;
+  --ios-label: rgba(255, 255, 255, 0.92);
+  --ios-label-secondary: rgba(255, 255, 255, 0.5);
+  --ios-label-tertiary: rgba(255, 255, 255, 0.28);
+  --ios-separator: rgba(255, 255, 255, 0.08);
+  --ios-fill: rgba(255, 255, 255, 0.1);
+  --ios-fill-secondary: rgba(255, 255, 255, 0.07);
+  --ios-fill-tertiary: rgba(255, 255, 255, 0.05);
+  --ios-bg: #090909;
+  --ios-bg-elevated: #141414;
+  --ios-bg-secondary: #141414;
+  --ios-bg-tertiary: #1a1a1a;
+  --ios-grouped: #090909;
+  --ios-grouped-secondary: rgba(255, 255, 255, 0.04);
+  --ios-grouped-tertiary: rgba(255, 255, 255, 0.06);
+
+  /* Minimal glass */
+  --liquid-blur: 24px;
+  --liquid-saturate: 110%;
+  --liquid-regular: rgba(18, 18, 20, 0.42);
+  --liquid-regular-border: rgba(255, 255, 255, 0.08);
+  --liquid-highlight: rgba(255, 255, 255, 0.07);
+  --liquid-shadow: none;
+  --liquid-shadow-soft: none;
+
+  --osu-surface: var(--ios-grouped-secondary);
+  --osu-surface-elevated: var(--ios-grouped-tertiary);
+  --osu-border: var(--ios-separator);
+
+  --background: var(--ios-bg);
+  --foreground: var(--ios-label);
+  --card: var(--liquid-regular);
+  --card-foreground: var(--ios-label);
+  --popover: var(--ios-bg-elevated);
+  --popover-foreground: var(--ios-label);
+  --primary: var(--osu-pink);
+  --primary-foreground: #ffffff;
+  --secondary: var(--ios-fill-secondary);
+  --secondary-foreground: var(--ios-label);
+  --muted: var(--ios-fill-tertiary);
+  --muted-foreground: var(--ios-label-secondary);
+  --accent: rgba(255, 255, 255, 0.06);
+  --accent-foreground: var(--ios-label);
+  --destructive: #f87171;
+  --destructive-foreground: #ffffff;
+  --border: var(--ios-separator);
+  --input: var(--ios-fill-tertiary);
+  --input-background: var(--ios-fill-tertiary);
+  --switch-background: var(--ios-fill);
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --ring: rgba(255, 255, 255, 0.2);
+  --chart-1: var(--osu-pink);
+  --chart-2: var(--osu-green);
+  --chart-3: var(--osu-pink-dim);
+  --chart-4: var(--ios-blue);
+  --chart-5: #fbbf24;
+  --radius: 0.875rem;
+  --sidebar: var(--ios-bg-elevated);
+  --sidebar-foreground: var(--ios-label);
+  --sidebar-primary: var(--osu-pink);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: var(--ios-fill-tertiary);
+  --sidebar-accent-foreground: var(--ios-label);
+  --sidebar-border: var(--ios-separator);
+  --sidebar-ring: var(--ring);
+}
+
+@theme inline {
+  --font-sans: var(--font-sans);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-switch-background: var(--switch-background);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-osu-pink: var(--osu-pink);
+  --color-osu-pink-dim: var(--osu-pink-dim);
+  --color-osu-green: var(--osu-green);
+  --color-osu-surface: var(--osu-surface);
+  --color-osu-surface-elevated: var(--osu-surface-elevated);
+  --color-osu-border: var(--osu-border);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    height: 100%;
+    overflow: hidden;
+    font-size: var(--font-size);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    height: 100%;
+    overflow: hidden;
+    font-family: var(--font-sans);
+  }
+
+  #root {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  h1 {
+    font-size: var(--text-2xl);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h2 {
+    font-size: var(--text-xl);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h3 {
+    font-size: var(--text-lg);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h4 {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  label {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  button {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  input {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-normal);
+    line-height: 1.5;
+  }
+}
+
+@keyframes marquee {
+  0%,
+  30% {
+    transform: translateX(0);
+  }
+  70%,
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 6s linear infinite;
+}
+
+.animate-pulse-glow {
+  opacity: 0.92;
+}

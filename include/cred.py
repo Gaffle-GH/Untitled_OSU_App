@@ -9,14 +9,20 @@ from osu import Client
 # Suppress NotOpenSSLWarning
 warnings.filterwarnings("ignore", category=NotOpenSSLWarning)
 
+# Module-level credentials for OAuth
+client_id = "50461"
+client_secret = "fgXrYFUMiuTFbidU4NMTikgIfWoL2fzQmQHql6Ft"
+
 def env_cred():
     client = Client.from_client_credentials(
-        client_id="50461",
-        client_secret="fgXrYFUMiuTFbidU4NMTikgIfWoL2fzQmQHql6Ft",
+        client_id=client_id,
+        client_secret=client_secret,
 
         # Leave this default to http://localhost
         redirect_url="http://localhost" 
     )
     return client
+
+client = env_cred()
 
 client = env_cred()

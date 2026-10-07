@@ -1,0 +1,31 @@
+@font-face {
+  font-family: "Torus";
+  src: url("/fonts/torus/Torus-Light.otf") format("opentype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Torus";
+  src: url("/fonts/torus/Torus-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Torus";
+  src: url("/fonts/torus/Torus-SemiBold.otf") format("opentype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Torus";
+  src: url("/fonts/torus/Torus-Bold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}

@@ -1,0 +1,375 @@
+/* Minimal glass — quiet surfaces, restrained color */
+
+:root {
+  --glass-inset: inset 0 1px 0 var(--liquid-highlight);
+}
+
+::selection {
+  background: rgba(255, 255, 255, 0.14);
+  color: var(--foreground);
+}
+
+/* Cards */
+.app-card {
+  background: rgba(16, 16, 18, 0.38);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(var(--liquid-blur)) saturate(var(--liquid-saturate));
+  -webkit-backdrop-filter: blur(var(--liquid-blur)) saturate(var(--liquid-saturate));
+  box-shadow: var(--glass-inset);
+}
+
+/* Section headers */
+.app-section-head {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--foreground);
+}
+
+.app-section-head svg {
+  color: var(--ios-label-secondary);
+}
+
+.app-section-sub {
+  margin-top: 0.125rem;
+  font-size: 0.6875rem;
+  line-height: 1.45;
+  color: var(--ios-label-tertiary);
+}
+
+.app-section-label {
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ios-label-tertiary);
+}
+
+/* Scrollbars */
+.app-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
+}
+
+.app-scroll::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.app-scroll::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.app-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* List rows */
+.app-row {
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.03);
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.app-row:hover {
+  border-color: rgba(255, 255, 255, 0.09);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.app-row-active {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+/* Inputs */
+input.app-input,
+.app-input {
+  border: none !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  box-shadow: none !important;
+  transition: background-color 0.15s ease;
+}
+
+input.app-input:focus,
+.app-input:focus {
+  outline: none !important;
+  background: rgba(255, 255, 255, 0.07) !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+}
+
+input.app-input:focus-visible,
+.app-input:focus-visible {
+  --tw-ring-shadow: none;
+}
+
+.app-input::placeholder {
+  color: var(--ios-label-tertiary);
+}
+
+/* Toolbars */
+.app-toolbar {
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(16px) saturate(110%);
+  -webkit-backdrop-filter: blur(16px) saturate(110%);
+}
+
+/* Sort buttons */
+.app-sort-btn {
+  border-radius: 0.375rem;
+  font-size: 0.625rem;
+  font-weight: 500;
+  transition: color 0.12s ease, background-color 0.12s ease;
+}
+
+.app-sort-btn-active {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--foreground);
+}
+
+.app-sort-btn-idle {
+  color: var(--ios-label-tertiary);
+}
+
+.app-sort-btn-idle:hover {
+  color: var(--ios-label-secondary);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* Stats */
+.app-stat {
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.app-stat-value {
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+/* Chips */
+.app-chip {
+  border: 1px solid transparent;
+  transition: color 0.12s ease, background-color 0.12s ease;
+}
+
+.app-chip-active {
+  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--foreground);
+}
+
+.app-chip-idle {
+  background: transparent;
+  color: var(--ios-label-tertiary);
+}
+
+.app-chip-idle:hover {
+  color: var(--ios-label-secondary);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* Tabs */
+.app-tabs {
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(20px) saturate(110%);
+  -webkit-backdrop-filter: blur(20px) saturate(110%);
+}
+
+.app-tab-trigger {
+  position: relative;
+  z-index: 1;
+  color: var(--ios-label-tertiary);
+  transition: color 0.15s ease;
+}
+
+.app-tab-trigger[data-state="active"] {
+  color: var(--foreground);
+}
+
+.app-tab-trigger[data-state="inactive"]:hover {
+  color: var(--ios-label-secondary);
+}
+
+.app-tab-indicator {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: var(--glass-inset);
+}
+
+.app-tab-trigger[data-state="active"] svg {
+  color: var(--ios-label-secondary);
+}
+
+/* Artwork overlays */
+.app-glass-panel {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(12, 12, 14, 0.35);
+  backdrop-filter: blur(24px) saturate(120%);
+  -webkit-backdrop-filter: blur(24px) saturate(120%);
+  box-shadow: var(--glass-inset);
+}
+
+/* Thumbnails */
+.app-thumb {
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.app-thumb img {
+  transition: opacity 0.2s ease;
+}
+
+.app-row:hover .app-thumb img,
+.group:hover .app-thumb img {
+  opacity: 0.92;
+}
+
+/* Metrics — color only where meaningful */
+.app-metric-pp,
+.app-metric-gain {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--osu-green);
+  box-shadow: none;
+}
+
+.app-metric-farm {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--ios-label-secondary);
+  box-shadow: none;
+}
+
+/* Buttons */
+.app-btn-primary {
+  border: none;
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--foreground);
+  box-shadow: none;
+  transition: background-color 0.12s ease;
+}
+
+.app-btn-primary:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.app-btn-primary:active {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.app-btn-icon {
+  border: none;
+  box-shadow: none;
+  transition: opacity 0.12s ease;
+}
+
+.app-btn-icon:hover {
+  opacity: 0.88;
+}
+
+/* Alerts & empty */
+.app-alert {
+  border: 1px solid rgba(248, 113, 113, 0.2);
+  background: rgba(248, 113, 113, 0.06);
+}
+
+.app-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--ios-label-tertiary);
+}
+
+.app-empty-icon {
+  display: flex;
+  width: 2.25rem;
+  height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--ios-label-tertiary);
+}
+
+/* Sign-in */
+.app-auth-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.app-auth-glow {
+  display: none;
+}
+
+.app-auth-avatar {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: none;
+}
+
+/* Skeleton */
+.app-skeleton {
+  background: rgba(255, 255, 255, 0.05);
+  animation: none;
+}
+
+/* Background */
+.ios-wallpaper {
+  background:
+    radial-gradient(
+      ellipse 80% 60% at 50% 0%,
+      rgba(255, 255, 255, 0.03),
+      transparent 70%
+    ),
+    var(--ios-bg);
+}
+
+/* Title */
+.app-title-ios {
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--ios-label-tertiary);
+}
+
+.app-title-mark {
+  display: none;
+}
+
+/* Badges */
+.app-badge-soft {
+  border: none;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--ios-label-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .app-card,
+  .app-toolbar,
+  .app-tabs,
+  .app-glass-panel {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: var(--ios-bg-elevated);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-thumb img {
+    transition: none;
+  }
+}

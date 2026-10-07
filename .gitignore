@@ -1,6 +1,38 @@
-src/TEST/venv/*
-.cache/
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Node / frontend
 node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Build artifacts
+build/
+dist/
+
+# IDE / OS
 .DS_Store
-.venv
-.vscode
+.vscode/
+.cache/
+
+# Secrets and local config
+include/cred.py
+include/user_token.json
+frontend/.env.local
+.env.local
+
+# Runtime data (downloaded beatmaps, previews, extracted art)
+src/TEST/download/*.osz
+src/TEST/previews/*
+!src/TEST/previews/.gitkeep
+download/
+previews/
+
+# Legacy duplicate frontend (removed)
+src/TEST/download/app/
+
+# Legacy duplicate venv
+src/TEST/venv/

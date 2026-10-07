@@ -1,0 +1,126 @@
+/* Locked 760x720 layout — keep in sync with pywebview_app.py */
+
+:root {
+  --layout-window-width: 760px;
+  --layout-window-height: 720px;
+  --layout-macos-titlebar-inset: 28px;
+  --layout-shell-px: 16px;
+  --layout-shell-py: 10px;
+  --layout-section-gap: 12px;
+  --layout-card-px: 14px;
+  --layout-result-row-height: 52px;
+  --layout-search-results-max: 120px;
+  --layout-detail-header: 72px;
+  --layout-detail-artwork-min: 124px;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+.app-layout-locked {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* macOS — title bar inset for traffic lights; header is the drag handle */
+html.mac-desktop .app-titlebar-locked {
+  min-height: var(--layout-macos-titlebar-inset);
+  padding-top: 8px;
+  user-select: none;
+  cursor: default;
+}
+
+.app-shell-locked {
+  min-height: 0;
+  flex: 1;
+  padding: var(--layout-shell-py) var(--layout-shell-px);
+}
+
+.editor-card-locked {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+  flex-direction: column;
+  gap: var(--layout-section-gap) !important;
+  overflow: hidden;
+  padding: var(--layout-card-px);
+}
+
+.search-section-locked {
+  display: flex;
+  flex-shrink: 0;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.search-results-box-locked {
+  display: flex;
+  height: var(--layout-search-results-max);
+  max-height: var(--layout-search-results-max);
+  flex-direction: column;
+  gap: 6px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 6px;
+}
+
+.detail-panel-locked {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 0.875rem;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(20px) saturate(110%);
+  -webkit-backdrop-filter: blur(20px) saturate(110%);
+}
+
+.detail-panel-header-locked {
+  display: flex;
+  height: var(--layout-detail-header);
+  flex-shrink: 0;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.02);
+  padding: 0 12px;
+}
+
+.detail-panel-artwork-locked {
+  position: relative;
+  min-height: var(--layout-detail-artwork-min);
+  flex: 1;
+  overflow: hidden;
+}
+
+.detail-panel-artwork-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.5),
+    transparent 45%
+  );
+}
+
+.tabs-shell-locked {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 12px;
+}
